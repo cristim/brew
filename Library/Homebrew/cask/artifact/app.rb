@@ -41,13 +41,11 @@ module Cask
         permissions = "a+rX,#{permissions}" if system_dir
 
         # We shell out to `chmod` instead of using `FileUtils.chmod` so that using `+X` works correctly.
-        command.run!("chmod", args: ["-R", permissions, target], sudo: !target.writable?)
+        command.run!("chmod", args: ["-R", permissions, target], sudo: nil)
 
-        [false, true].each do |sudo|
-          break if command.run("chgrp", args: ["-hR", Caskroom.expected_caskroom_group, target],
-                                       sudo:, must_succeed: sudo, print_stderr: sudo).success?
-          break unless system_dir
-        end
+        sudo = system_dir ? nil : false
+        command.run("chgrp", args: ["-hR", Caskroom.expected_caskroom_group, target],
+                             sudo:, must_succeed: system_dir, print_stderr: system_dir)
       end
     end
   end

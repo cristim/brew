@@ -28,7 +28,7 @@ class SystemCommand
       params(
         executable:   T.any(String, Pathname),
         args:         T::Array[T.any(String, Integer, Float, Pathname)],
-        sudo:         T::Boolean,
+        sudo:         T.nilable(T::Boolean),
         sudo_as_root: T::Boolean,
         env:          T::Hash[String, T.nilable(T.any(String, T::Boolean, PATH))],
         input:        T.any(String, T::Array[String]),
@@ -63,7 +63,7 @@ class SystemCommand
       params(
         executable:   T.any(String, Pathname),
         args:         T::Array[T.any(String, Integer, Float, Pathname)],
-        sudo:         T::Boolean,
+        sudo:         T.nilable(T::Boolean),
         sudo_as_root: T::Boolean,
         env:          T::Hash[String, T.nilable(T.any(String, T::Boolean, PATH))],
         input:        T.any(String, T::Array[String]),
@@ -109,7 +109,7 @@ class SystemCommand
     params(
       executable:   T.any(String, Pathname),
       args:         T::Array[T.any(String, Integer, Float, Pathname)],
-      sudo:         T::Boolean,
+      sudo:         T.nilable(T::Boolean),
       sudo_as_root: T::Boolean,
       env:          T::Hash[String, T.nilable(T.any(String, T::Boolean, PATH))],
       input:        T.any(String, T::Array[String]),
@@ -126,6 +126,18 @@ class SystemCommand
   def self.run(executable, args: [], sudo: false, sudo_as_root: false, env: {}, input: [], must_succeed: false,
                print_stdout: false, print_stderr: true, debug: nil, verbose: nil, secrets: [], chdir: nil,
                timeout: nil)
+    # Only use sudo: nil for operations that can safely be retried.
+    if sudo.nil?
+      result = new(executable, args:, sudo: false, sudo_as_root: false, env:, input:, must_succeed: false,
+                   print_stdout:, print_stderr: Homebrew::EnvConfig.no_sudo? ? print_stderr : false,
+                   debug:, verbose:, secrets:, chdir:, timeout:).run!
+      if result.success? || Homebrew::EnvConfig.no_sudo?
+        result.assert_success! if must_succeed
+        return result
+      end
+      sudo = true
+    end
+
     new(executable, args:, sudo:, sudo_as_root:, env:, input:, must_succeed:, print_stdout:, print_stderr:, debug:,
         verbose:, secrets:, chdir:, timeout:).run!
   end
@@ -134,7 +146,7 @@ class SystemCommand
     params(
       executable:   T.any(String, Pathname),
       args:         T::Array[T.any(String, Integer, Float, Pathname)],
-      sudo:         T::Boolean,
+      sudo:         T.nilable(T::Boolean),
       sudo_as_root: T::Boolean,
       env:          T::Hash[String, T.nilable(T.any(String, T::Boolean, PATH))],
       input:        T.any(String, T::Array[String]),
@@ -386,6 +398,12 @@ class SystemCommand
 
   sig { returns(T::Array[String]) }
   def sudo_prefix
+    # Availability is detected in brew.sh.
+    if Homebrew::EnvConfig.no_sudo?
+      raise ErrorDuringExecution.new([executable.to_s, *expanded_args], status: 1, secrets: @secrets,
+                                     output: [[:stderr, "sudo is disabled by HOMEBREW_NO_SUDO.\n"]])
+    end
+
     askpass_flags = ENV.key?("SUDO_ASKPASS") ? ["-A"] : []
     user_flags = []
     if Homebrew::EnvConfig.sudo_through_sudo_user?

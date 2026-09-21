@@ -53,7 +53,7 @@ RSpec.shared_examples Cask::Staged do
     allow(subject).to receive(:Pathname).and_return(fake_pathname)
 
     expect(subject.command).to receive(:run!)
-      .with("chown", args: ["-R", "--", "fake_user:staff", fake_pathname], sudo: true)
+      .with("chown", args: ["-R", "--", "fake_user:staff", fake_pathname], sudo: nil)
 
     subject.set_ownership(fake_pathname.to_s)
   end
@@ -68,7 +68,7 @@ RSpec.shared_examples Cask::Staged do
       .with(
         "chown",
         args: ["-R", "--", "fake_user:staff", fake_pathname, fake_pathname],
-        sudo: true,
+        sudo: nil,
       )
 
     subject.set_ownership([fake_pathname.to_s, fake_pathname.to_s])
@@ -83,7 +83,7 @@ RSpec.shared_examples Cask::Staged do
       .with(
         "chown",
         args: ["-R", "--", "other_user:other_group", fake_pathname],
-        sudo: true,
+        sudo: nil,
       )
 
     subject.set_ownership(fake_pathname.to_s, user: "other_user", group: "other_group")
@@ -99,7 +99,7 @@ RSpec.shared_examples Cask::Staged do
       .and_return(true)
 
     expect(subject.command).to receive(:run!)
-      .with("chown", args: ["-R", "--", "fake_user:staff", fake_pathname], sudo: true)
+      .with("chown", args: ["-R", "--", "fake_user:staff", fake_pathname], sudo: nil)
 
     subject.set_ownership(fake_pathname.to_s)
   end

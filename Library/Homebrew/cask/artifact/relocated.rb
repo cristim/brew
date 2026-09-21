@@ -102,12 +102,12 @@ module Cask
         # Some packages are shipped as u=rx (e.g. Bitcoin Core)
         command.run!("chmod",
                      args: ["--", "u+rw", file, file.realpath],
-                     sudo: !file.writable? || !file.realpath.writable?)
+                     sudo: nil)
 
         command.run!("/usr/bin/xattr",
                      args:         ["-w", ALT_NAME_ATTRIBUTE, altnames, file],
                      print_stderr: false,
-                     sudo:         !file.writable?)
+                     sudo:         nil)
       end
 
       private

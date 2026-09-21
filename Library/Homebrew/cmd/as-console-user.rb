@@ -17,8 +17,9 @@ module Homebrew
 
           This is intended for MDM, Munki and Jamf workflows where `brew` is
           invoked as root but Homebrew operations should run as the logged-in
-          console user. The nested command is always dispatched through
-          `HOMEBREW_BREW_FILE`.
+          console user. Uses their home and a clean environment, dispatching
+          through `HOMEBREW_BREW_FILE`.
+          When `sudo` is disabled or unavailable, root can switch users directly.
         EOS
 
         named_args min: 1

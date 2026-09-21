@@ -29,6 +29,7 @@ module Homebrew
       def delete_or_move(paths, sudo: false)
         return if paths.blank?
 
+        sudo &&= !Homebrew::EnvConfig.no_sudo?
         symlinks, paths = paths.partition(&:symlink?)
 
         FileUtils.rm_f symlinks

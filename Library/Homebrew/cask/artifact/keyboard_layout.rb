@@ -7,6 +7,9 @@ module Cask
   module Artifact
     # Artifact corresponding to the `keyboard_layout` stanza.
     class KeyboardLayout < Moved
+      sig { override.returns(T::Boolean) }
+      def requires_sudo? = true
+
       sig {
         override.params(
           adopt:        T::Boolean,

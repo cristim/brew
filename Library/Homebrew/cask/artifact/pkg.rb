@@ -12,6 +12,9 @@ module Cask
   module Artifact
     # Artifact corresponding to the `pkg` stanza.
     class Pkg < AbstractArtifact
+      sig { override.returns(T::Boolean) }
+      def requires_sudo? = true
+
       sig { returns(Pathname) }
       attr_reader :path
 

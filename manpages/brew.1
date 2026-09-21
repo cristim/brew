@@ -83,7 +83,7 @@ Turn Homebrew\[u2019]s analytics off\.
 .SS "\fBas\-console\-user\fP \fIcommand\fP \fR[\fIargs\fP \.\.\.]"
 Run a Homebrew command as the active macOS console user\.
 .P
-This is intended for MDM, Munki and Jamf workflows where \fBbrew\fP is invoked as root but Homebrew operations should run as the logged\-in console user\. The nested command is always dispatched through \fBHOMEBREW_BREW_FILE\fP\&\.
+This is intended for MDM, Munki and Jamf workflows where \fBbrew\fP is invoked as root but Homebrew operations should run as the logged\-in console user\. Uses their home and a clean environment, dispatching through \fBHOMEBREW_BREW_FILE\fP\&\. When \fBsudo\fP is disabled or unavailable, root can switch users directly\.
 .SS "\fBautoremove\fP \fR[\fB\-\-dry\-run\fP]"
 Uninstall formulae that were only installed as a dependency of another formula and are now no longer needed\.
 .TP
@@ -3215,6 +3215,9 @@ If set, \fBbrew info\fP and \fBbrew install\fP will not warn when a formula\[u20
 .TP
 \fBHOMEBREW_NO_RELOCATE_BUILD_PREFIX\fP
 If set, do not relocate bottles built for a different prefix at install time\. Homebrew will build from source instead\.
+.TP
+\fBHOMEBREW_NO_SUDO\fP
+If set, do not run commands with \fBsudo\fP(8)\. Automatically enabled when \fBsudo\fP is missing, reports a recognised inability to elevate privileges or explicitly denies access\. A password requirement or an inconclusive check preserves normal \fBsudo\fP behaviour\.
 .TP
 \fBHOMEBREW_NO_UPDATE_REPORT_NEW\fP
 If set, \fBbrew update\fP will not show the list of newly added formulae/casks\.

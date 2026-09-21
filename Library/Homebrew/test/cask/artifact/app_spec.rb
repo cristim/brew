@@ -54,24 +54,14 @@ RSpec.describe Cask::Artifact::App, :cask do
 
         expect(command).to receive(:run)
           .with("chgrp", args: ["-hR", group, target_path],
-                         sudo: false, must_succeed: false, print_stderr: false)
+                         sudo: nil, must_succeed: true, print_stderr: true)
 
         install_phase
       end
     end
 
-    it "retries changing the group with sudo when necessary" do
-      allow(command).to receive(:run).with("chgrp", hash_including(sudo: false))
-                                     .and_return(instance_double(SystemCommand::Result, success?: false))
-
-      expect(command).to receive(:run)
-        .with("chgrp", args: ["-hR", "admin", target_path],
-                       sudo: true, must_succeed: true, print_stderr: true)
-
-      install_phase
-    end
-
     it "tries changing the app group in the home directory without sudo" do
+      allow(Cask::Caskroom).to receive(:expected_caskroom_group).and_return("admin")
       allow(Dir).to receive(:home).and_return(target_path.parent.to_s)
       expect(command).to receive(:run)
         .with("chgrp", args: ["-hR", "admin", target_path],
@@ -511,7 +501,7 @@ RSpec.describe Cask::Artifact::App, :cask do
 
         expect(command).to receive(:run!)
           .with("/bin/cp", args: ["-pR", source_contents_path, target_path],
-                           sudo: true)
+                           sudo: nil)
           .and_call_original
         expect(FileUtils).not_to receive(:move).with(source_contents_path, an_instance_of(Pathname))
 
@@ -533,7 +523,7 @@ RSpec.describe Cask::Artifact::App, :cask do
           expect(command).to receive(:run!)
             .with("touch", args:         [target_path / ".homebrew-write-test"],
                            print_stderr: false,
-                           sudo:         true)
+                           sudo:         nil)
             .and_raise(ErrorDuringExecution.new([], status: 1,
 output: [[:stderr, "touch: #{target_path}/.homebrew-write-test: Operation not permitted\n"]], secrets: []))
 

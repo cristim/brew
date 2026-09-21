@@ -648,6 +648,12 @@ module Homebrew
         replacement: "a Landlock-enabled Linux kernel",
         odeprecated: true,
       },
+      HOMEBREW_NO_SUDO:                          {
+        description: "If set, do not run commands with `sudo`(8). Automatically enabled when `sudo` is missing, " \
+                     "reports a recognised inability to elevate privileges or explicitly denies access. " \
+                     "A password requirement or an inconclusive check preserves normal `sudo` behaviour.",
+        boolean:     :set,
+      },
       HOMEBREW_NO_UPDATE_REPORT_NEW:             {
         description: "If set, `brew update` will not show the list of newly added formulae/casks.",
         boolean:     true,

@@ -24,9 +24,8 @@ The Homebrew package manager may be used on Linux and [Windows Subsystem for Lin
 
 Instructions for the best, supported install of Homebrew on Linux are on the [homepage](https://brew.sh/).
 
-The installation script installs Homebrew to `/home/linuxbrew/.linuxbrew` using *sudo*. Homebrew does not use *sudo* after installation. Using `/home/linuxbrew/.linuxbrew` allows the use of most binary packages (bottles) which will not work when installing in e.g. your personal home directory.
-
-The prefix `/home/linuxbrew/.linuxbrew` was chosen to avoid writing to system-owned directories after installation while still allowing most precompiled binaries (bottles) to be used. Homebrew is designed for single-user installations rather than shared role accounts.
+The installation script installs Homebrew to `/home/linuxbrew/.linuxbrew`, which allows the use of most binary packages (bottles).
+The managing account needs write access to the installation; see [running without sudo](Installation.md#running-without-sudo).
 
 Follow the installer's *Next steps* instructions to add Homebrew to your `PATH` and shell configuration.
 For a supported installation using Bash, run:

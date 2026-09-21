@@ -62,7 +62,8 @@ module Homebrew
             EOS
           end
 
-          if GitHub::Actions.env_set? && HOMEBREW_PREFIX.to_s == HOMEBREW_LINUX_DEFAULT_PREFIX
+          if GitHub::Actions.env_set? && HOMEBREW_PREFIX.to_s == HOMEBREW_LINUX_DEFAULT_PREFIX &&
+             !Homebrew::EnvConfig.no_sudo?
             ohai "chmod +t -R /home/linuxbrew/"
             system "sudo", "chmod", "+t", "-R", "/home/linuxbrew/"
           end

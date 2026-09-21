@@ -53,9 +53,9 @@ module Cask
         EOS
       end
 
-      ohai "Changing ownership of paths required by #{cask} with `sudo` (which may request your password)..."
+      ohai "Changing ownership of paths required by #{cask}..."
       command.run!("chown", args: ["-R", "--", "#{user}:#{group}", *full_paths],
-                            sudo: true)
+                            sudo: nil)
     end
 
     private

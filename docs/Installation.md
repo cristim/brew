@@ -1,12 +1,13 @@
 ---
-last_review_date: "2026-09-17"
+last_review_date: "2026-09-21"
 ---
 
 # Installation
 
 Instructions for a supported install of Homebrew are on the [homepage](https://brew.sh/).
 
-The script installs Homebrew to its default prefix (`/opt/homebrew` for Apple Silicon, `/usr/local` for macOS Intel and `/home/linuxbrew/.linuxbrew` for Linux) so that [you don’t need *sudo* after Homebrew's initial installation](FAQ.md#why-does-homebrew-say-sudo-is-bad) when you `brew install`.
+The script installs Homebrew to its default prefix (`/opt/homebrew` for Apple Silicon, `/usr/local` for macOS Intel and `/home/linuxbrew/.linuxbrew` for Linux) so that [you don’t need *sudo* after Homebrew's initial installation](FAQ.md#why-does-homebrew-say-sudo-is-bad) when you install formulae.
+Some casks and system services still require elevated privileges.
 Custom prefixes can also use bottles (binary packages); see their [Tier 1 requirements and stability caveat](Support-Tiers.md#custom-prefixes).
 It is a careful script; it can be run even if you have stuff installed in the preferred prefix already.
 It tells you exactly what it will do before it does it too.
@@ -43,6 +44,40 @@ This also applies to installations and upgrades performed with the macOS `.pkg` 
 ## Advanced configuration
 
 The Homebrew installer offers various advanced configuration settings. **Most users can skip this section and instead follow the instructions on the [homepage](https://brew.sh/)!**
+
+### Running without sudo
+
+Homebrew can be installed for a non-admin account.
+The shell installer needs a writable prefix; arrange initial provisioning if needed, or use `--path` to select a [compatible custom prefix](Support-Tiers.md#custom-prefixes).
+The macOS `.pkg` installer can provision the default prefix for the account selected by `HOMEBREW_PKG_USER` above.
+After provisioning, run routine Homebrew commands as that account; formula installation and updates do not require sudo.
+
+To disable Homebrew's sudo calls explicitly:
+
+```sh
+export HOMEBREW_NO_SUDO=1
+```
+
+When unset, Homebrew disables sudo only when it is missing, reports a recognised inability to elevate privileges or a non-interactive check explicitly denies access.
+Password requirements and inconclusive failures preserve normal behaviour.
+Optional filesystem operations try without sudo before retrying with it.
+When sudo is disabled, casks requiring it for installers, keyboard layouts or install steps are rejected before installation.
+Homebrew does not substitute manual `.pkg` extraction for installation because it would skip installer scripts and package receipts.
+For compatible app casks, use a writable destination such as `brew install --cask --appdir="$HOME/Applications" <cask>`.
+This setting does not control commands run internally by third-party installers.
+
+### Running as the console user
+
+On macOS, MDM, Munki and Jamf workflows can run Homebrew as the active logged-in console user:
+
+```sh
+brew as-console-user install wget
+```
+
+The command uses that user's home and a clean environment.
+An already-root process can switch users even when sudo is disabled or unavailable, using macOS `login`.
+Other accounts need sudo access to switch users.
+It fails if no supported console user is logged in.
 
 ### Git remote mirroring
 

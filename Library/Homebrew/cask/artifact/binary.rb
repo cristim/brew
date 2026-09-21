@@ -24,7 +24,7 @@ module Cask
         if source.writable?
           FileUtils.chmod "+x", source
         else
-          command.run!("chmod", args: ["+x", source], sudo: true)
+          command.run!("chmod", args: ["+x", source], sudo: nil)
         end
       end
     end

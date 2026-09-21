@@ -1536,9 +1536,24 @@ RSpec.describe Homebrew::InstallSteps do
     expect(command).to receive(:run!)
       .with("chmod", args: ["--", "0644", root/"stage/Prepared.file"], sudo: false).ordered
     expect(command).to receive(:run!)
-      .with("chown", args: ["-R", "--", "root:wheel", root/"stage/Owned.app"], sudo: true).ordered
+      .with("chown", args: ["-R", "--", "root:wheel", root/"stage/Owned.app"], sudo: nil).ordered
     expect(command).to receive(:run!)
-      .with("chown", args: ["--", "root:wheel", root/"stage/Owned.file"], sudo: true).ordered
+      .with("chown", args: ["--", "root:wheel", root/"stage/Owned.file"], sudo: nil).ordered
+
+    Homebrew::InstallSteps::Runner.new(context:, command:).run(steps)
+  end
+
+  specify "changes ownership without sudo when sudo is disabled" do
+    ENV["HOMEBREW_NO_SUDO"] = "1"
+    steps = Homebrew::InstallSteps::DSL.build(default_base: :staged_path) do
+      set_ownership "Owned.file"
+    end
+    (root/"stage").mkpath
+    (root/"stage/Owned.file").write ""
+    command = class_double(SystemCommand)
+
+    expect(command).to receive(:run!)
+      .with("chown", args: ["-R", "--", "#{User.current}:staff", root/"stage/Owned.file"], sudo: nil)
 
     Homebrew::InstallSteps::Runner.new(context:, command:).run(steps)
   end

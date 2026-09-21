@@ -4,6 +4,7 @@
 require "open3"
 
 require "cmd/shared_examples/args_parse"
+require "cmd/shared_examples/as_user"
 require "cmd/as-console-user"
 
 RSpec.describe Homebrew::Cmd::AsConsoleUser do
@@ -22,6 +23,7 @@ RSpec.describe Homebrew::Cmd::AsConsoleUser do
 
   it_behaves_like "parseable arguments"
   it_behaves_like "a documented command", "as-console-user", shell: true
+  it_behaves_like "switching users without sudo", "as-console-user"
 
   def run_as_console_user_shell(script, env = {})
     Bundler.with_unbundled_env do
@@ -280,5 +282,24 @@ RSpec.describe Homebrew::Cmd::AsConsoleUser do
       git
       --minimum-version=2.50.1
     EOS
+  end
+
+  it "preserves sudo for the console command when it is available" do
+    ENV.delete("HOMEBREW_NO_SUDO")
+    stdout, = run_as_console_user_shell(
+      <<~SH,
+        source "#{as_console_user_script}"
+        stat() { echo brewer; }
+        id() {
+          [[ "$1" == -un ]] && { echo brewer; return; }
+          printf 'brewer:*:503:20::0:0:Brewer:#{test_root}:/bin/zsh\\n'
+        }
+        sudo() { printf '%s\\n' "$1 $2 $3"; }
+        homebrew-as-console-user list
+      SH
+      macos_env,
+    )
+
+    expect(stdout).to eq("-H -u brewer\n")
   end
 end

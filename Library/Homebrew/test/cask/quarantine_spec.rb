@@ -196,7 +196,7 @@ RSpec.describe Cask::Quarantine do
       end
     end
 
-    it "uses FFI through vendored Ruby when the destination needs sudo" do
+    it "uses FFI through vendored Ruby with optional elevation" do
       require "os/mac/ffi"
 
       source = Pathname("/tmp/Source.app")
@@ -214,7 +214,7 @@ RSpec.describe Cask::Quarantine do
           source,
           destination,
         ],
-        sudo: true,
+        sudo: nil,
       )
 
       with_env(HOMEBREW_DEVELOPER: nil) do

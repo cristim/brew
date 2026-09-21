@@ -180,21 +180,19 @@ module Cask
     def self.ensure_caskroom_exists
       return if path.exist?
 
-      sudo = !path.parent.writable?
-
-      if sudo && !ENV.key?("SUDO_ASKPASS") && $stdout.tty?
+      if !path.parent.writable? && !Homebrew::EnvConfig.no_sudo? && !ENV.key?("SUDO_ASKPASS") && $stdout.tty?
         ohai "Creating Caskroom directory: #{path}",
              "We'll set permissions properly so we won't need sudo in the future."
       end
 
-      SystemCommand.run("mkdir", args: ["-p", path], sudo:)
-      SystemCommand.run("chmod", args: ["g+rwx", path], sudo:)
-      SystemCommand.run("chown", args: [User.current.to_s, path], sudo:)
+      SystemCommand.run("mkdir", args: ["-p", path], sudo: nil)
+      SystemCommand.run("chmod", args: ["g+rwx", path], sudo: nil)
+      SystemCommand.run("chown", args: [User.current.to_s, path], sudo: nil)
 
-      chgrp_path(path, sudo) unless caskroom_group_correct?(path)
+      chgrp_path(path, nil) unless caskroom_group_correct?(path)
     end
 
-    sig { params(path: Pathname, sudo: T::Boolean).void }
+    sig { params(path: Pathname, sudo: T.nilable(T::Boolean)).void }
     def self.chgrp_path(path, sudo)
       SystemCommand.run("chgrp", args: [expected_caskroom_group, path], sudo:)
     end
@@ -216,7 +214,11 @@ module Cask
 
     sig { returns(String) }
     def self.expected_caskroom_group
-      "admin"
+      if !Homebrew::EnvConfig.no_sudo? && (group = Etc.getgrnam("admin")) && Process.groups.include?(group.gid)
+        return "admin"
+      end
+
+      Etc.getgrgid(Process.egid)&.name || "staff"
     end
 
     # Get all installed casks.

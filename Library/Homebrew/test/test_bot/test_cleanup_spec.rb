@@ -4,6 +4,19 @@
 require "dev-cmd/test-bot"
 
 RSpec.describe Homebrew::TestBot do
+  it "cleans writable paths without sudo when sudo is disabled" do
+    ENV["HOMEBREW_NO_SUDO"] = "1"
+    ENV["HOMEBREW_GITHUB_ACTIONS"] = "1"
+    ENV["GITHUB_ACTIONS_HOMEBREW_SELF_HOSTED"] = "1"
+    cleanup = Class.new(Homebrew::TestBot::TestCleanup) do
+      public :delete_or_move
+    end.new
+
+    expect(cleanup).not_to receive(:test)
+
+    cleanup.delete_or_move([mktmpdir], sudo: true)
+  end
+
   describe Homebrew::TestBot::CleanupAfter do
     # Regression test: checkout_branch_if_needed, reset_if_needed, and clean_if_needed
     # expect a String (repository path). Passing HOMEBREW_REPOSITORY (Pathname) would cause

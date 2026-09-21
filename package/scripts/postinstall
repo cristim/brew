@@ -91,6 +91,17 @@ then
   exit 1
 fi
 
+if [[ -z "${HOMEBREW_NO_SUDO:-}" ]] && command -v sudo &>/dev/null
+then
+  user_command=(sudo -u "${homebrew_pkg_user}")
+elif [[ "$(id -u)" == 0 ]]
+then
+  user_command=(login -f -l -q "${homebrew_pkg_user}")
+else
+  echo "Switching to the Homebrew installation user without sudo requires root." >&2
+  exit 1
+fi
+
 # set permissions
 refuse_symlinked_directories
 chmod -h ug=rwx Caskroom Cellar Frameworks bin etc include lib opt sbin share var
@@ -101,10 +112,15 @@ chmod -h ug=rwx Caskroom Cellar Frameworks bin etc include lib opt sbin share va
   enter_managed_directory linked "${prefix_directory}/var/homebrew/linked" var/homebrew/linked
   chmod ug=rwx .
 )
-chown -R "${homebrew_pkg_user}:admin" .
+homebrew_pkg_group="admin"
+if [[ " $(id -Gn "${homebrew_pkg_user}") " != *" admin "* ]]
+then
+  homebrew_pkg_group="$(id -gn "${homebrew_pkg_user}")"
+fi
+chown -R "${homebrew_pkg_user}:${homebrew_pkg_group}" .
 
 git_as_user() {
-  sudo -u "${homebrew_pkg_user}" /usr/bin/env \
+  "${user_command[@]}" /usr/bin/env \
     HOME="${homebrew_directory}" GIT_CONFIG_GLOBAL=/dev/null PATH="${PATH}" \
     git -c core.hooksPath=/dev/null "$@"
 }
@@ -126,8 +142,8 @@ user_cache_dir="${user_home_dir}/Library/Caches/Homebrew"
 user_api_cache_dir="${user_cache_dir}/api"
 # Seed the cache as the install user: as root, `cp` follows a symlink planted at the
 # destination, and the `chown -R` this removes would reach anything hard-linked into the tree.
-sudo -u "${homebrew_pkg_user}" mkdir -vp "${user_api_cache_dir}"
-sudo -u "${homebrew_pkg_user}" cp -vpR "${homebrew_directory}/cache_api/." "${user_api_cache_dir}"
+"${user_command[@]}" mkdir -vp "${user_api_cache_dir}"
+"${user_command[@]}" cp -vpR "${homebrew_directory}/cache_api/." "${user_api_cache_dir}"
 rm -vrf "${homebrew_directory}/cache_api"
 
 # add Homebrew to the default PATH

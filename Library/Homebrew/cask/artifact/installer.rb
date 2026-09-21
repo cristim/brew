@@ -71,6 +71,9 @@ module Cask
       sig { returns(T::Boolean) }
       attr_reader :manual_install
 
+      sig { override.returns(T::Boolean) }
+      def requires_sudo? = args[:sudo] == true
+
       sig { params(cask: Cask, args: T.untyped).void }
       def initialize(cask, **args)
         super

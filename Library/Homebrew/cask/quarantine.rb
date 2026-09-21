@@ -276,7 +276,7 @@ module Cask
               test_file,
             ],
             print_stderr: false,
-            sudo:         true,
+            sudo:         nil,
           )
           command.run!(
             "rm",
@@ -284,7 +284,7 @@ module Cask
               test_file,
             ],
             print_stderr: false,
-            sudo:         true,
+            sudo:         nil,
           )
           return true
         rescue ErrorDuringExecution => e

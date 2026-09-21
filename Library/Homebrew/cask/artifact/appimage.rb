@@ -33,7 +33,7 @@ module Cask
         if target.writable?
           FileUtils.chmod "+x", target
         else
-          command.run!("chmod", args: ["+x", target], sudo: true)
+          command.run!("chmod", args: ["+x", target], sudo: nil)
         end
       end
 

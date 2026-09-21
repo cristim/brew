@@ -48,6 +48,10 @@ module Cask
       sig { abstract.returns(String) }
       def summarize; end
 
+      # Whether installation always requires elevated privileges.
+      sig { overridable.returns(T::Boolean) }
+      def requires_sudo? = false
+
       sig { params(path: T.any(String, Pathname)).returns(Pathname) }
       def staged_path_join_executable(path)
         path = Pathname(path)

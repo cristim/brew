@@ -159,7 +159,7 @@ module Cask
         Utils.gain_permissions_mkpath(target.dirname, command:)
 
         command.run! "/bin/ln", args: ["--no-dereference", "--force", "--symbolic", source, target],
-                                sudo: !target.dirname.writable?
+                                sudo: nil
       end
 
       # Check if the target file is a symlink that originates from a formula

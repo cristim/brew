@@ -12,7 +12,7 @@ RSpec.describe Cask::Caskroom do
         path = Pathname(dir)/"Caskroom"
         allow(described_class).to receive(:path).and_return(path)
         allow(described_class).to receive(:caskroom_group_correct?).with(path).and_return(false)
-        expect(described_class).to receive(:chgrp_path).with(path, false)
+        expect(described_class).to receive(:chgrp_path).with(path, nil)
 
         described_class.ensure_caskroom_exists
       end
@@ -38,7 +38,7 @@ RSpec.describe Cask::Caskroom do
         allow(parent).to receive(:writable?).and_return(false)
         allow(SystemCommand).to receive(:run)
 
-        expect(described_class).to receive(:chgrp_path).with(path, true)
+        expect(described_class).to receive(:chgrp_path).with(path, nil)
 
         described_class.ensure_caskroom_exists
       end
@@ -75,7 +75,25 @@ RSpec.describe Cask::Caskroom do
   end
 
   describe ".caskroom_group_correct?" do
+    it "uses the effective group for a non-admin account" do
+      ENV.delete("HOMEBREW_NO_SUDO")
+      allow(Process).to receive(:groups).and_return([Process.egid])
+      allow(Etc).to receive(:getgrnam).with("admin").and_return(instance_double(Etc::Group, gid: Process.egid + 1))
+      allow(Etc).to receive(:getgrgid).with(Process.egid).and_return(instance_double(Etc::Group, name: "brewer"))
+
+      expect(described_class.expected_caskroom_group).to eq("brewer")
+    end
+
+    it "uses the effective group when sudo is disabled" do
+      ENV["HOMEBREW_NO_SUDO"] = "1"
+      allow(Etc).to receive(:getgrgid).with(Process.egid).and_return(instance_double(Etc::Group, name: "brewer"))
+
+      expect(described_class.expected_caskroom_group).to eq("brewer")
+    end
+
     it "checks the admin group on macOS", :needs_macos do
+      ENV.delete("HOMEBREW_NO_SUDO")
+      allow(Process).to receive(:groups).and_return([1])
       path = Pathname("/tmp/Caskroom")
       allow(path).to receive(:stat).and_return(instance_double(File::Stat, gid: 1))
       allow(Etc).to receive(:getgrnam).with("admin").and_return(instance_double(Etc::Group, gid: 1))

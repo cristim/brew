@@ -401,6 +401,9 @@ module Homebrew::EnvConfig
     def no_sandbox_linux?; end
 
     sig { returns(T::Boolean) }
+    def no_sudo?; end
+
+    sig { returns(T::Boolean) }
     def no_update_report_new?; end
 
     sig { returns(T::Boolean) }

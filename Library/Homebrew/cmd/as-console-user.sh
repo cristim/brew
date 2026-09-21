@@ -40,15 +40,27 @@ homebrew-as-console-user() {
   console_home="$(homebrew-user-home "${console_user}")" ||
     odie "Could not determine home directory for console user: ${console_user}"
 
+  local user_command=()
+  if [[ -z "${HOMEBREW_NO_SUDO:-}" ]]
+  then
+    user_command=(sudo -H -u "${console_user}")
+  elif [[ "$(id -un)" != "${console_user}" ]]
+  then
+    [[ "$(id -u)" == 0 ]] ||
+      odie "Cannot switch to ${console_user} with sudo disabled. Log in as ${console_user} instead."
+    user_command=(login -f -l -q "${console_user}")
+  fi
+
   (
     cd "${console_home}" &>/dev/null || odie "Failed to cd to ${console_home}!"
 
-    sudo -H -u "${console_user}" /usr/bin/env -i \
+    "${user_command[@]}" /usr/bin/env -i \
       "HOME=${console_home}" \
       "USER=${console_user}" \
       "LOGNAME=${console_user}" \
       "PWD=${console_home}" \
       "PATH=/usr/bin:/bin:/usr/sbin:/sbin" \
+      ${HOMEBREW_NO_SUDO:+"HOMEBREW_NO_SUDO=${HOMEBREW_NO_SUDO}"} \
       "${HOMEBREW_BREW_FILE}" "$@"
   )
 }

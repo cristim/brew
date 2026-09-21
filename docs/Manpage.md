@@ -134,8 +134,9 @@ Control Homebrew's anonymous aggregate user behaviour analytics. Read more at
 Run a Homebrew command as the active macOS console user.
 
 This is intended for MDM, Munki and Jamf workflows where `brew` is invoked as
-root but Homebrew operations should run as the logged-in console user. The
-nested command is always dispatched through `HOMEBREW_BREW_FILE`.
+root but Homebrew operations should run as the logged-in console user. Uses
+their home and a clean environment, dispatching through `HOMEBREW_BREW_FILE`.
+When `sudo` is disabled or unavailable, root can switch users directly.
 
 ### `autoremove` \[`--dry-run`\]
 
@@ -4980,6 +4981,13 @@ command execution (e.g. `$(cat file)`).
 
 : If set, do not relocate bottles built for a different prefix at install time.
   Homebrew will build from source instead.
+
+`HOMEBREW_NO_SUDO`
+
+: If set, do not run commands with `sudo`(8). Automatically enabled when `sudo`
+  is missing, reports a recognised inability to elevate privileges or explicitly
+  denies access. A password requirement or an inconclusive check preserves
+  normal `sudo` behaviour.
 
 `HOMEBREW_NO_UPDATE_REPORT_NEW`
 

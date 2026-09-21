@@ -273,7 +273,7 @@ We will continue to monitor the supply-chain security landscape and take further
 
 ## Local trust model
 
-Homebrew is designed for a single trusted administrator on macOS or Linux who owns the Homebrew installation.
+Homebrew is designed for a single trusted owning account on macOS or Linux.
 Homebrew provides no security guarantees when users with write permissions to the Homebrew prefix are considered untrusted.
 This also applies when Homebrew is installed or upgraded through MDM.
 See [Support Tiers](Support-Tiers.md#unsupported) for unsupported multi-user configurations.

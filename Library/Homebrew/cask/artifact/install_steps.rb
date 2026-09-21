@@ -20,6 +20,12 @@ module Cask
       sig { returns(Homebrew::InstallSteps::Steps) }
       attr_reader :steps
 
+      sig { override.returns(T::Boolean) }
+      def requires_sudo?
+        respond_to?(:install_phase) &&
+          Homebrew::InstallSteps::Runner.new(context: cask).sudo_required?(steps, include_optional: false)
+      end
+
       sig { override.returns(T::Array[T.anything]) }
       def to_args = [{ steps: }]
 
