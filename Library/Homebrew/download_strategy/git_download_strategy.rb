@@ -1,6 +1,7 @@
 # typed: strict
 # frozen_string_literal: true
 
+require "uri"
 require "utils/timer"
 
 # Strategy for downloading a Git repository.
@@ -8,6 +9,7 @@ require "utils/timer"
 # @api public
 class GitDownloadStrategy < VCSDownloadStrategy
   MINIMUM_COMMIT_HASH_LENGTH = 7
+  MAX_SSH_PORT = 65_535
 
   sig { params(url: String, name: String, version: T.nilable(T.any(String, Version)), meta: T.untyped).void }
   def initialize(url, name, version, **meta)
@@ -131,9 +133,65 @@ class GitDownloadStrategy < VCSDownloadStrategy
     return unless ssh?
 
     sandbox.allow_read_if_exists(path: home/".ssh", type: :subpath)
-    if (socket = ENV.fetch("SSH_AUTH_SOCK", nil))
-      sandbox.allow_network(path: socket)
+
+    ssh_args = ["-G"]
+    destination = if @url.include?("://")
+      scheme, _, authority = @url.split("/")
+      uri = begin
+        URI("#{scheme}//#{authority}")
+      rescue URI::InvalidURIError
+        nil
+      end
+      if uri
+        ssh_args += ["-p", uri.port.to_s] if uri.port
+        [uri.user, uri.hostname].compact.join("@")
+      end
+    else
+      host = @url[%r{\A(?:[^@/]+@)?(?:\[[^\]]+\]|[^:]+)}]&.delete("[]")
+      _, hostname, port = host&.match(/\A([^:]+):(\d+)\z/).to_a
+      if port && port.to_i <= MAX_SSH_PORT
+        ssh_args += ["-p", port]
+        hostname
+      else
+        host
+      end
     end
+
+    # The URL is untrusted; SSH configuration is trusted. Validate substitutions and paths.
+    # Sandbox processes can use the selected agent for other destinations. Agent-side
+    # destination constraints or confirmation (ssh-add -h/-c) limit this.
+    unless destination&.match?(/\A(?:[a-zA-Z0-9._-]+@)?[a-zA-Z0-9._:-]+\z/)
+      return odebug("Skipping SSH agent access: unsupported SSH destination.")
+    end
+
+    # Match exec must run inside the sandbox, with the same environment as the download.
+    config = sandbox.capture("ssh", args: [*ssh_args, "--", destination], env:,
+                                    must_succeed: false, print_stderr: false)
+    return odebug("Skipping SSH agent access: ssh -G failed.", config.stderr) unless config.success?
+
+    _, socket = config.stdout.match(/^identityagent (.+)$/).to_a
+    socket = "$SSH_AUTH_SOCK" if socket.nil? || socket == "SSH_AUTH_SOCK"
+    return odebug("Skipping SSH agent access: IdentityAgent is none.") if socket == "none"
+
+    if socket.start_with?("$")
+      variable = socket.delete_prefix("$")
+      socket = ENV.fetch(variable, nil)
+      return odebug("Skipping SSH agent access: #{variable.inspect} is unset or empty.") if socket.blank?
+    end
+    return odebug("Skipping SSH agent access: #{socket.inspect} is not absolute.") unless socket.start_with?("/")
+    if socket.split("/").include?("..")
+      return odebug("Skipping SSH agent access: #{socket.inspect} contains parent directory traversal.")
+    end
+
+    begin
+      socket = File.realpath(socket)
+    rescue SystemCallError, ArgumentError => e
+      return odebug("Skipping SSH agent access: cannot resolve #{socket.inspect}.", e)
+    end
+    return odebug("Skipping SSH agent access: #{socket.inspect} is not a socket.") unless File.socket?(socket)
+    return odebug("Skipping SSH agent access: #{socket.inspect} is not owned by you.") unless File.owned?(socket)
+
+    sandbox.allow_network(path: socket)
   end
 
   # Local paths and the native git:// transport do not use credentials.
