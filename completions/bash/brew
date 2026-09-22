@@ -432,6 +432,22 @@ off)
   esac
 }
 
+_brew_as_brew_user() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  case "${cur}" in
+    -*)
+      __brewcomp "
+      --debug
+      --help
+      --quiet
+      --verbose
+      "
+      return
+      ;;
+    *) ;;
+  esac
+}
+
 _brew_as_console_user() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   case "${cur}" in
@@ -3881,6 +3897,7 @@ _brew() {
     advisory-match) _brew_advisory_match ;;
     alias) _brew_alias ;;
     analytics) _brew_analytics ;;
+    as-brew-user) _brew_as_brew_user ;;
     as-console-user) _brew_as_console_user ;;
     audit) _brew_audit ;;
     autoremove) _brew_autoremove ;;

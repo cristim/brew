@@ -25,7 +25,7 @@ The Homebrew package manager may be used on Linux and [Windows Subsystem for Lin
 Instructions for the best, supported install of Homebrew on Linux are on the [homepage](https://brew.sh/).
 
 The installation script installs Homebrew to `/home/linuxbrew/.linuxbrew`, which allows the use of most binary packages (bottles).
-The managing account needs write access to the installation; see [running without sudo](Installation.md#running-without-sudo).
+The managing account needs write access to the installation; see [running without sudo](Installation.md#running-without-sudo) and [using a dedicated owner](Installation.md#running-as-the-homebrew-owner).
 
 Follow the installer's *Next steps* instructions to add Homebrew to your `PATH` and shell configuration.
 For a supported installation using Bash, run:

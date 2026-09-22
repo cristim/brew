@@ -27,7 +27,8 @@ sudo chmod -N /var/tmp/.homebrew_pkg_user.plist
 The file must be a regular non-symlink file owned by `root`, have mode `0600` and have no access control list.
 The installer ignores an override that does not meet these requirements and falls back to the active console user.
 The selected user must exist before installation and must not be `root`.
-The installer runs Git commands as this user.
+When developer tools provide Git, the installer runs repository maintenance as this user.
+See [Homebrew for Mac Admins](Homebrew-for-Mac-Admins.md) for deployment through MDM, non-admin accounts and central configuration.
 
 Homebrew provides no security guarantees for installations where users with write permissions to the Homebrew prefix are considered untrusted.
 This also applies to installations and upgrades performed with the macOS `.pkg` installer, including through MDM.
@@ -36,7 +37,7 @@ This also applies to installations and upgrades performed with the macOS `.pkg` 
 
 * An Apple Silicon CPU; using a 64-bit Intel CPU is a [Tier 3](Support-Tiers.md#tier-3) configuration <sup>[1](#1)</sup>
 * macOS Sequoia (15) (or higher) installed on officially supported hardware<sup>[2](#2)</sup>
-* Command Line Tools (CLT) for Xcode (from `xcode-select --install` or
+* When building formulae from source, Command Line Tools (CLT) for Xcode (from `xcode-select --install` or
   [https://developer.apple.com/download/all/](https://developer.apple.com/download/all/)) or
   [Xcode](https://itunes.apple.com/us/app/xcode/id497799835) <sup>[3](#3)</sup>
 * The Bourne-again shell for installation (i.e. `bash`) <sup>[4](#4)</sup>
@@ -66,6 +67,27 @@ Homebrew does not substitute manual `.pkg` extraction for installation because i
 For compatible app casks, use a writable destination such as `brew install --cask --appdir="$HOME/Applications" <cask>`.
 This setting does not control commands run internally by third-party installers.
 
+### Running as the Homebrew owner
+
+A dedicated account can manage Homebrew while other accounts read and execute its installed software.
+Give the owner a writable home directory and write access to the Homebrew directories and any shared app destination.
+Non-admin installations use the account's primary group, including a custom group; membership of `admin` or `staff` is not required.
+When already running as the owner, invoke `brew` normally.
+To select the prefix owner from another account or a deployment process running as root on macOS or Linux, use:
+
+```sh
+brew as-brew-user install wget
+```
+
+The command uses the owner's home and a clean environment, switching accounts through sudo when necessary.
+When sudo is disabled or unavailable, an already-root process switches through macOS `login` or Linux `runuser` instead.
+These commands use the selected account's primary and supplementary groups.
+Without permission to switch accounts, log in as the owner instead.
+No console login is needed for `as-brew-user`.
+A root-owned prefix is rejected; directory ownership is not changed.
+User services, caches and personal configuration belong to the managing account.
+Run `brew doctor` as that account and check group permissions and access control lists before sharing the installation.
+
 ### Running as the console user
 
 On macOS, MDM, Munki and Jamf workflows can run Homebrew as the active logged-in console user:
@@ -75,9 +97,10 @@ brew as-console-user install wget
 ```
 
 The command uses that user's home and a clean environment.
-An already-root process can switch users even when sudo is disabled or unavailable, using macOS `login`.
+An already-root process can switch users even when sudo is disabled or unavailable, using the same fallback as `as-brew-user`.
 Other accounts need sudo access to switch users.
 It fails if no supported console user is logged in.
+Use `as-brew-user` above when a dedicated account owns Homebrew.
 
 ### Git remote mirroring
 
@@ -142,6 +165,6 @@ Uninstallation is documented in the [FAQ](FAQ.md#how-do-i-uninstall-homebrew).
 All Intel Mac configurations that can run Homebrew, including those using OpenCore Legacy Patcher, are [Tier 3](Support-Tiers.md#tier-3).
 macOS 10.15 (Catalina) and older will not run Homebrew at all.
 
-<a data-proofer-ignore name="3"><sup>3</sup></a> Xcode or the CLT is required to build formulae from source and remains a requirement for a supported installation. Casks and bottles can be installed without developer tools. Downloading Xcode may require an Apple Developer account on older versions of Mac OS X. Sign up for free at [Apple's website](https://developer.apple.com/account/).
+<a data-proofer-ignore name="3"><sup>3</sup></a> Xcode or the CLT is required to build formulae from source. On Apple Silicon, casks and bottles can be installed without developer tools. Intel macOS also requires developer tools for bottle installation. Downloading Xcode may require an Apple Developer account on older versions of Mac OS X. Sign up for free at [Apple's website](https://developer.apple.com/account/).
 
 <a data-proofer-ignore name="4"><sup>4</sup></a> The one-liner installation method found on [brew.sh](https://brew.sh/) uses the Bourne-again shell at `/bin/bash`. Notably, `zsh`, `fish`, `tcsh` and `csh` will not work.

@@ -5,8 +5,8 @@
 # $4 System root directory (unused)
 set -euo pipefail
 
-# Use system tools and the Git supplied by the Command Line Tools or Xcode.
-export PATH="/Library/Developer/CommandLineTools/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# Use system tools without triggering developer tool installation prompts.
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)"
 if [[ -f "${script_dir}/macos_user.sh" ]]
@@ -119,18 +119,22 @@ then
 fi
 chown -R "${homebrew_pkg_user}:${homebrew_pkg_group}" .
 
-git_as_user() {
-  "${user_command[@]}" /usr/bin/env \
-    HOME="${homebrew_directory}" GIT_CONFIG_GLOBAL=/dev/null PATH="${PATH}" \
-    git -c core.hooksPath=/dev/null "$@"
-}
-
-# reset Git repository
 rm -rf "${homebrew_directory}/.git/hooks" "${homebrew_directory}/.gitconfig" "${homebrew_directory}/.config/git"
-latest_tag="$(git_as_user -C "${homebrew_directory}" tag --list --sort="-version:refname" | head -n1)"
-git_as_user -C "${homebrew_directory}" checkout --force -B stable
-git_as_user -C "${homebrew_directory}" reset --hard "${latest_tag}"
-git_as_user -C "${homebrew_directory}" clean -f -d
+# The package already contains a stable checkout; reset it when Git is available.
+if developer_dir="$(xcode-select --print-path 2>/dev/null)" &&
+   [[ -n "${developer_dir}" && "${developer_dir}" != / && -x "${developer_dir}/usr/bin/git" ]]
+then
+  git_as_user() {
+    "${user_command[@]}" /usr/bin/env \
+      HOME="${homebrew_directory}" GIT_CONFIG_GLOBAL=/dev/null PATH="${PATH}" \
+      "${developer_dir}/usr/bin/git" -c core.hooksPath=/dev/null "$@"
+  }
+
+  latest_tag="$(git_as_user -C "${homebrew_directory}" tag --list --sort="-version:refname" | head -n1)"
+  git_as_user -C "${homebrew_directory}" checkout --force -B stable
+  git_as_user -C "${homebrew_directory}" reset --hard "${latest_tag}"
+  git_as_user -C "${homebrew_directory}" clean -f -d
+fi
 
 # move API cache to ~/Library/Caches/Homebrew
 user_home_dir="$(homebrew-user-home "${homebrew_pkg_user}")" ||

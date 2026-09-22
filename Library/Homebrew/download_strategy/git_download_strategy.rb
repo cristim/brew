@@ -26,6 +26,13 @@ class GitDownloadStrategy < VCSDownloadStrategy
     @ref ||= T.let("master", T.untyped)
   end
 
+  sig { override.params(timeout: T.nilable(T.any(Float, Integer))).void }
+  def fetch(timeout: nil)
+    require "utils/git"
+    Utils::Git.ensure_installed!
+    super
+  end
+
   # Returns the most recent modified time for all files in the current working directory after stage.
   #
   # @api public

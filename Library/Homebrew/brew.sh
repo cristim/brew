@@ -161,9 +161,9 @@ check-run-command-as-root() {
   [[ -f /run/.containerenv ]] && return
   [[ -f /proc/1/cgroup ]] && grep -E "azpl_job|actions_job|docker|garden|kubepods" -q /proc/1/cgroup && return
 
-  # `brew as-console-user` is run by root-owned MDM/Munki/Jamf workflows so it
-  # can immediately dispatch the requested Homebrew command as the console user.
-  [[ "${HOMEBREW_COMMAND}" == "as-console-user" ]] && return
+  # These commands immediately dispatch as the selected user, including when
+  # invoked by root-owned MDM/Munki/Jamf workflows.
+  [[ "${HOMEBREW_COMMAND}" == "as-console-user" || "${HOMEBREW_COMMAND}" == "as-brew-user" ]] && return
 
   # `brew setup-sandbox` is intended to be run with `sudo` to prepare the
   # Homebrew sandbox.

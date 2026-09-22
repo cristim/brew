@@ -80,10 +80,14 @@ Turn Homebrew\[u2019]s analytics on\.
 .TP
 \fBbrew analytics off\fP
 Turn Homebrew\[u2019]s analytics off\.
+.SS "\fBas\-brew\-user\fP \fIcommand\fP \fR[\fIargs\fP \.\.\.]"
+Run a Homebrew command as the owner of \fBHOMEBREW_PREFIX\fP on macOS or Linux\.
+.P
+Uses the owner\[u2019]s home and a clean environment\. Changing users requires permission to use \fBsudo\fP or an already\-root process; running as the owner does not\. When \fBsudo\fP is disabled or unavailable, root can switch users directly\.
 .SS "\fBas\-console\-user\fP \fIcommand\fP \fR[\fIargs\fP \.\.\.]"
 Run a Homebrew command as the active macOS console user\.
 .P
-This is intended for MDM, Munki and Jamf workflows where \fBbrew\fP is invoked as root but Homebrew operations should run as the logged\-in console user\. Uses their home and a clean environment, dispatching through \fBHOMEBREW_BREW_FILE\fP\&\. When \fBsudo\fP is disabled or unavailable, root can switch users directly\.
+This is intended for MDM, Munki and Jamf workflows where \fBbrew\fP is invoked as root but Homebrew operations should run as the logged\-in console user\. Uses their home and a clean environment, dispatching through \fBHOMEBREW_BREW_FILE\fP\&\. Use \fBas\-brew\-user\fP to select the prefix owner\. When \fBsudo\fP is disabled or unavailable, root can switch users directly\.
 .SS "\fBautoremove\fP \fR[\fB\-\-dry\-run\fP]"
 Uninstall formulae that were only installed as a dependency of another formula and are now no longer needed\.
 .TP

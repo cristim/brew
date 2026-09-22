@@ -166,6 +166,7 @@ __brew_internal_commands() {
     '--version:Print the version numbers of Homebrew, Homebrew/homebrew-core and Homebrew/homebrew-cask (if tapped) to standard output'
     'alias:Show an alias'\''s command'
     'analytics:Control Homebrew'\''s anonymous aggregate user behaviour analytics'
+    'as-brew-user:Run a Homebrew command as the owner of `HOMEBREW_PREFIX` on macOS or Linux'
     'as-console-user:Run a Homebrew command as the active macOS console user'
     'audit:Check formula or cask for Homebrew coding style violations'
     'autoremove:Uninstall formulae that were only installed as a dependency of another formula and are now no longer needed'
@@ -520,6 +521,15 @@ off)
       esac
       ;;
   esac
+}
+
+# brew as-brew-user
+_brew_as_brew_user() {
+  _arguments \
+    '--debug[Display any debugging information]' \
+    '--help[Show this message]' \
+    '--quiet[Make some output more quiet]' \
+    '--verbose[Make some output more verbose]'
 }
 
 # brew as-console-user

@@ -1,5 +1,5 @@
 ---
-last_review_date: "2026-07-18"
+last_review_date: "2026-09-21"
 ---
 
 Start with [installation](Installation.md),
@@ -14,6 +14,7 @@ Documentation is grouped below by audience: users, contributors, maintainers and
 - [`brew` manual page (command documentation, also available with `man brew`)](Manpage.md)
 - [Homebrew Blog (news on major updates)](https://brew.sh/blog/)
 - [Installation](Installation.md)
+- [Homebrew for Mac Admins: MDM and Non-Admin Accounts](Homebrew-for-Mac-Admins.md)
 - [Support Tiers](Support-Tiers.md)
 - [Troubleshooting](Troubleshooting.md)
 - [FAQ (Frequently Asked Questions)](FAQ.md)

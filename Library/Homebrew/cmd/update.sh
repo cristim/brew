@@ -607,7 +607,7 @@ EOS
   if ! git --version &>/dev/null ||
      [[ -n "${HOMEBREW_FORCE_BREWED_GIT}" && ! -x "${HOMEBREW_PREFIX}/opt/git/bin/git" ]]
   then
-    # we cannot install a Homebrew Git if homebrew/core is unavailable.
+    # Keep Git bootstrapping in sync with utils/git.rb.
     if [[ -z "${HOMEBREW_CORE_AVAILABLE}" ]] || ! brew install git
     then
       odie "'git' must be installed and in your PATH!"

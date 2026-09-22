@@ -22,6 +22,16 @@ RSpec.describe GitDownloadStrategy do
     end
   end
 
+  describe "#fetch" do
+    it "aborts the download if Git cannot be installed" do
+      allow(Utils::Git).to receive(:ensure_installed!).and_raise("Git installation failed")
+      allow(strategy).to receive(:repo_valid?).and_return(true)
+      allow(strategy).to receive(:update)
+
+      expect { strategy.fetch }.to raise_error("Git installation failed")
+    end
+  end
+
   describe "#command_sandbox" do
     let(:home) { mktmpdir }
 

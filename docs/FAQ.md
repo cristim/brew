@@ -125,7 +125,9 @@ The prefix `/opt/homebrew` was chosen to allow installations in `/opt/homebrew` 
 
 ## Why is the default installation prefix `/home/linuxbrew/.linuxbrew` on Linux?
 
-The prefix `/home/linuxbrew/.linuxbrew` was chosen to avoid writing to system-owned directories after installation while still allowing most precompiled binaries (bottles) to be used. Homebrew is designed for single-user installations rather than shared role accounts. See [Support Tiers](Support-Tiers.md#unsupported) for unsupported multi-user environments.
+The prefix `/home/linuxbrew/.linuxbrew` was chosen to avoid writing to system-owned directories after installation while still allowing most precompiled binaries (bottles) to be used.
+Homebrew is designed for one owning account, which can be a [dedicated account](Installation.md#running-as-the-homebrew-owner).
+See [Support Tiers](Support-Tiers.md#unsupported) for unsupported multi-user environments.
 
 ## Why does Homebrew say sudo is bad?
 
@@ -141,11 +143,11 @@ Ownership on Linux, all subdirectories and files default to the current user and
 
 Installed executable files commonly use `0755 (u=rwx,g=rx,o=rx)`, allowing other accounts to read and execute them.
 The installers also make some managed directories group-writable, so do not assume that the owner is the only account able to modify an installation.
-Check directory permissions, group membership and access control lists when provisioning the installation.
+Check directory permissions, group membership and access control lists when provisioning a dedicated owner.
 
 When a Homebrew-installed binary is executed, it runs with the privileges of the user who launched it.
 
-Note: Homebrew is primarily designed for single-user use and does not work well in multi-user configurations.
+Use a [single owning account](Installation.md#running-as-the-homebrew-owner) to manage the installation.
 
 ## Why isn’t a particular command documented?
 

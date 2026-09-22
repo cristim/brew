@@ -189,16 +189,31 @@ RSpec.describe Utils::Git do
         stub_const("HOMEBREW_SHIMS_PATH", HOMEBREW_PREFIX/"bin/shim")
       end
 
-      it "can't install brewed git if homebrew/core is unavailable" do
+      it "can't install brewed git if homebrew/core and the API are unavailable" do
+        ENV["HOMEBREW_NO_INSTALL_FROM_API"] = "1"
         allow_any_instance_of(Pathname).to receive(:directory?).and_return(false)
         expect { described_class.ensure_installed! }.to raise_error("Git is unavailable")
+      end
+
+      it "installs Git through the API without accepting the system stub",
+         unless: ENV.fetch("HOMEBREW_TEST_GENERIC_OS", nil) do
+        ENV.delete("HOMEBREW_NO_INSTALL_FROM_API")
+        allow(CoreTap.instance).to receive(:installed?).and_return(false)
+        allow(described_class).to receive(:available?).and_return(false)
+        formula = instance_double(Formula)
+        allow(Formula).to receive(:[]).with("git").and_return(formula)
+        allow(formula).to receive(:ensure_installed!).with(no_args) do
+          allow(described_class).to receive(:available?).and_return(true)
+        end
+
+        expect { described_class.ensure_installed! }.not_to raise_error
       end
 
       it "raises error if can't install git" do
         allow(CoreTap.instance).to receive(:installed?).and_return(true)
         formula_double = instance_double(Formula)
         allow(Formula).to receive(:[]).with("git").and_return(formula_double)
-        allow(formula_double).to receive(:ensure_installed!).with(executable: "git").and_raise(RuntimeError)
+        allow(formula_double).to receive(:ensure_installed!).with(no_args).and_raise(RuntimeError)
 
         expect { described_class.ensure_installed! }.to raise_error("Git is unavailable")
       end
@@ -209,8 +224,7 @@ RSpec.describe Utils::Git do
         allow(CoreTap.instance).to receive(:installed?).and_return(true)
         formula_double = instance_double(Formula)
         allow(Formula).to receive(:[]).with("git").and_return(formula_double)
-        allow(formula_double).to receive(:ensure_installed!).with(executable: "git")
-                                                            .and_return(Pathname.new("/usr/bin/git"))
+        allow(formula_double).to receive(:ensure_installed!).with(no_args).and_return(formula_double)
         expect(described_class).to receive(:available?).and_return(true)
 
         described_class.ensure_installed!

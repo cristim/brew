@@ -381,6 +381,13 @@ __fish_brew_complete_sub_arg 'analytics' 'off' -l quiet -d 'Make some output mor
 __fish_brew_complete_sub_arg 'analytics' 'off' -l verbose -d 'Make some output more verbose'
 
 
+__fish_brew_complete_cmd 'as-brew-user' 'Run a Homebrew command as the owner of `HOMEBREW_PREFIX` on macOS or Linux'
+__fish_brew_complete_arg 'as-brew-user' -l debug -d 'Display any debugging information'
+__fish_brew_complete_arg 'as-brew-user' -l help -d 'Show this message'
+__fish_brew_complete_arg 'as-brew-user' -l quiet -d 'Make some output more quiet'
+__fish_brew_complete_arg 'as-brew-user' -l verbose -d 'Make some output more verbose'
+
+
 __fish_brew_complete_cmd 'as-console-user' 'Run a Homebrew command as the active macOS console user'
 __fish_brew_complete_arg 'as-console-user' -l debug -d 'Display any debugging information'
 __fish_brew_complete_arg 'as-console-user' -l help -d 'Show this message'
