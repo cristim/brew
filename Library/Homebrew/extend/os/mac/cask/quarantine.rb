@@ -23,8 +23,14 @@ module OS
             odebug "Checking quarantine support"
 
             status = if ::Cask::Quarantine.xattr_available?
-              odebug "Quarantine is available via FFI."
-              :quarantine_available
+              begin
+                MacOS::FFI::CoreFoundation.url_quarantine_properties_key
+                odebug "Quarantine is available via FFI."
+                :quarantine_available
+              rescue Fiddle::DLError => e
+                odebug "Core Foundation quarantine support is unavailable: #{e.message}"
+                :quarantine_unavailable
+              end
             else
               odebug "There's no working version of `xattr` on this system."
               :xattr_broken

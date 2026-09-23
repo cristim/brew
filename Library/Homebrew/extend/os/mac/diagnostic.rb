@@ -561,6 +561,8 @@ module OS
           messages = case status
           when :quarantine_available
             [nil, nil]
+          when :quarantine_unavailable
+            ["No Cask quarantine support available: Core Foundation quarantine APIs are missing.", nil]
           when :xattr_broken
             ["No Cask quarantine support available: there's no working version of `xattr` on this system.", nil]
           when :no_swift

@@ -62,10 +62,19 @@ RSpec.describe Cask::Quarantine do
       allow(klass).to receive(:system_command)
         .with(Pathname("/usr/bin/xattr"), args: ["-h"], print_stderr: false)
         .and_return(instance_double(SystemCommand::Result, success?: true))
+      allow(MacOS::FFI::CoreFoundation).to receive(:url_quarantine_properties_key)
 
       with_env(HOMEBREW_DEVELOPER: nil) do
         expect(klass.available?).to be(true)
       end
+    end
+
+    it "disables quarantine when Core Foundation lacks its resource key" do
+      allow(klass).to receive(:xattr_available?).and_return(true)
+      allow(MacOS::FFI::CoreFoundation).to receive(:url_quarantine_properties_key)
+        .and_raise(Fiddle::DLError, "unknown symbol")
+
+      expect(klass.available?).to be(false)
     end
   end
 
