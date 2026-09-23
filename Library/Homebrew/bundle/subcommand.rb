@@ -9,7 +9,7 @@ require "etc"
 require "bundle/subcommand_context"
 require "utils/output"
 
-Dir["#{__dir__}/subcommand/*.rb"].each do |subcommand|
+Dir.children(File.join(__dir__, "subcommand")).grep(/\.rb\z/).sort.each do |subcommand|
   require "bundle/subcommand/#{File.basename(subcommand, ".rb")}"
 end
 
